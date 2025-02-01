@@ -2,10 +2,14 @@
 //
 
 #include <iostream>
+#include "ExampleClass.h"
 
 int main()
 {
     std::cout << "Hello World!\n";
+
+    lessonFirst::SmartHuman<lessonFirst::Male> man1{ "Apolon", lessonFirst::Male{} };
+    std::cout << man1 << std::endl;
 }
 
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
