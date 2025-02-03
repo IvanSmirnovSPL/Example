@@ -4,46 +4,62 @@
 #include <iostream>
 #include <vector>
 
-template <typename T>
-void dispArray(const T* arr, std::size_t size)
+void compute()
 {
-    std::cout << "Array:";
-    for (std::size_t i = 0; i < size; ++i)
-    {
-        std::cout << " " << arr[i];
-    }
-    std::cout << std::endl;
-}
+    std::unique_ptr<int[]> data = std::make_unique<int[]>(1024);
+    //std::unique_ptr<int[]> ptr_copy = data; // ОШИБКА! Копирование запрещено
+} // `data` выходит из области действия здесь: она автоматически уничтожается
+
+void compute2()
+{
+    std::shared_ptr<int> ptr = std::make_shared<int>(100);
+    std::cout << ptr.use_count() << std::endl;
+    std::shared_ptr<int> ptr_copy = ptr;   // Сделать копию: с shared_ptr возможно!
+    std::cout << ptr.use_count() << std::endl;
+    // ptr_copy.use_count() == 2, в конце концов, это одни и те же базовые данные.
+} // Здесь `ptr` и `ptr_copy` выходят из области действия. Больше никаких ссылок  
+  // исходные данные (т.е. use_count() == 0), поэтому они автоматически убираются.
+
+struct Player
+{
+    std::shared_ptr<Player> companion;
+    ~Player() { std::cout << "~Player\n"; }
+};
+
+struct Player2
+{
+    std::weak_ptr<Player2> companion;
+    ~Player2() { std::cout << "~Player2\n"; }
+};
 
 int main()
 {
-    std::size_t n;
-    std::cin >> n;
-    int* arr = new int[n];
-    for (std::size_t i = 0; i < n; ++i)
-    {
-        arr[i] = int(n - i) * 2;
-    }
-    dispArray(arr, n);
-    auto ptr = arr + 1;
-    std::cout << "*ptr (= arr + 1): " << *ptr << std::endl;
-    std::cout << "type(ptr): " << typeid(ptr).name() << std::endl;
-    delete[] arr;
+    // unique
+    std::unique_ptr<int[]>  pU1(new int[50]);
+    std::unique_ptr<int[]>  pU2 = std::make_unique<int[]>(50);
+    std::unique_ptr<int[]>  pU3 = std::move(pU2);
 
-    std::cout << std::endl;
+    //shared
+    std::shared_ptr<int[]> pS1(new int[50]);
+    std::shared_ptr<int>   pS2 = std::make_shared<int>(50);
 
-    std::vector<int> stlVector(n);
-    std::cout << "Size: " << stlVector.size()
-        << ", capacity: " << stlVector.capacity() << std::endl;;
-    for (std::size_t i = 0; i < stlVector.size(); ++i)
-    {
-        stlVector[i] = int(n - i) * 2;
-    }
-    std::cout << "stlVector: ";
-    std::copy(stlVector.begin(), stlVector.end(),
-        std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
-    auto iter = stlVector.begin() + 2;
-    std::cout << "*iter (= stlVector.begin() + 2): " << *iter << std::endl;
-    std::cout << "type(iter): " << typeid(iter).name() << std::endl;
+    std::shared_ptr<Player> jasmine = std::make_shared<Player>();
+    std::shared_ptr<Player> albert = std::make_shared<Player>();
+    jasmine->companion = albert; // (1)
+    albert->companion = jasmine; // (2)
+
+    // weak только из shared или другого weak
+    std::shared_ptr<int> p_shared = std::make_shared<int>(100);
+    std::weak_ptr<int>   p_weak1(p_shared);
+    std::weak_ptr<int>   p_weak2(p_weak1);
+
+    // можно работать только после преобразование
+    if (p_weak1.expired())
+        std::cout << "Object was deleted" << std::endl;
+    std::shared_ptr<int> p_shared_orig = p_weak1.lock();
+
+    std::shared_ptr<Player2> jasmine2 = std::make_shared<Player2>();
+    std::shared_ptr<Player2> albert2 = std::make_shared<Player2>();
+    jasmine2->companion = albert2; // (1)
+    albert2->companion = jasmine2; // (2)
 }
