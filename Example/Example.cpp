@@ -3,43 +3,40 @@
 
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 
 int main()
 {
     setlocale(LC_ALL, "ru_RU");
 
-    std::string someString{ R"(C:\Workspace\с++ practice\Example\Example)" };
-    std::filesystem::path somePath(someString);
-    std::cout << "somePath: " << somePath.string() << std::endl;
-
     std::filesystem::path curPath = std::filesystem::current_path();
-    std::cout << "curPath: " << curPath.string() << std::endl;
-
     auto parent = curPath.parent_path();
-    std::cout << "Parent: " << parent.string() << std::endl;
-
     auto myDir = parent / "myDir";
-    std::cout << "MyDir: " << myDir.string() << std::endl;
 
-    std::cout << std::endl;
-    for (auto& line : std::filesystem::directory_iterator(myDir))
-    {
-        std::cout << "Path: " << line.path().string() << ", filename: "
-            << line.path().filename().string() << std::endl;
-    }
-    std::cout << std::endl;
+    std::ofstream fout;
+    fout.open(myDir / "tmp.txt");
 
-    auto fooPath = myDir / "foo.txt";
-    if (std::filesystem::exists(fooPath))
-    {
-        std::filesystem::remove(fooPath);
-    }
-    std::filesystem::copy(myDir / "tmp.txt", myDir / "foo.txt");
+    fout << "FAKI IS THE CHAMPION" << std::endl;
+    fout << "PER ASPERA AD ASTRA" << std::endl;
 
-    auto barPath = myDir / "bar.txt";
-    if (std::filesystem::exists(barPath))
+    fout.close();
+
+    std::filesystem::rename(myDir / "tmp.txt", myDir / "input.data");
+
+    std::ifstream fin(myDir / "input.data");
+
+    std::string someInfo;
+    std::getline(fin, someInfo);
+    std::cout << someInfo << std::endl;
+
+    char c;
+    while (fin.get(c))
     {
-        std::filesystem::remove(barPath);
+        std::cout << c << std::endl;
     }
-    std::filesystem::rename(fooPath, barPath);
+
+    fin.close();
+
+    
+
 }
