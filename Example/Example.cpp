@@ -4,39 +4,31 @@
 
 using namespace std::chrono_literals;
 
-// 1. процесс и поток
-// 2. когда это нужно, минусы и плюсы
-// 3. методы засыпания
-// 4. someWork
+// 1. передача параметров
 
-void someWork()
+void someWork(int a, double b)
 {
-    for (int i = 0; i < 5; ++i)
-    {
-        std::this_thread::sleep_for(1s);
-        std::cout << "Номер потока someWork: "
-            << std::this_thread::get_id() << ", итерация: " << i << std::endl;
-    }
+    std::cout << "Начало работы, id: " << std::this_thread::get_id() << std::endl;
+    std::this_thread::sleep_for(3s);
+    std::cout << "a + b = " << a + b << std::endl;
+    std::this_thread::sleep_for(3s);
+    std::cout << "Конец работы, id: " << std::this_thread::get_id() << std::endl;
 }
 
 int main()
 {
     setlocale(LC_ALL, "ru");
 
-    //someWork();
-    //std::thread th(someWork);
-    //th.detach();
-    //th.join();
+    //someWork(1, 2);
+    std::thread th(someWork, 1, 2);
 
     for (int i = 0; i < 10; ++i)
     {
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(300ms);
         std::cout << "Номер потока main: "
             << std::this_thread::get_id() << ", итерация: " << i << std::endl;
     }
-    std::cout << "Цикл закончился" << std::endl;
-    auto timePoint = std::chrono::system_clock::now() + 1s;
-    std::this_thread::sleep_until(timePoint);
-    std::cout << "Второй sleep закончился" << std::endl;
-    std::cout << "Конец программы" << std::endl;
+
+    th.join();
+    
 }
