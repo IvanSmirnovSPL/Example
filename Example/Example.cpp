@@ -4,9 +4,12 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <barrier> 
+#include <barrier>
+#include <latch>
 #include <functional>
 #include <chrono>
+
+using namespace std::chrono_literals;
 
 // 1. mutex
 // 2. lock_guard
@@ -14,24 +17,26 @@
 // 4. recursive_lock, unick_lock
 // 5. barrier std::barrier my_barrier{ 3 }; my_barrier.arrive_and_wait(); latch 
 
-std::mutex mtx1;
-std::mutex mtx2;
+std::latch bar{2};
 
 void doWork1()
 {
-    mtx1.lock();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    mtx2.lock();
-    mtx2.unlock();
-    mtx1.unlock();
+    std::this_thread::sleep_for(1s);
+    std::cout << "Sleep is finished: " << std::this_thread::get_id() << std::endl;
+    bar.arrive_and_wait();
+    std::this_thread::sleep_for(1s);
+    std::cout << "Sleep is finished: " << std::this_thread::get_id() << std::endl;
+    std::cout << "The end: " << std::this_thread::get_id() << std::endl;
 }
 
 void doWork2()
 {
-    mtx2.lock();
-    mtx1.lock();
-    mtx1.unlock();
-    mtx2.unlock();
+    std::this_thread::sleep_for(2s);
+    std::cout << "Sleep is finished: " << std::this_thread::get_id() << std::endl;
+    bar.arrive_and_wait();
+    std::this_thread::sleep_for(2s);
+    std::cout << "Sleep is finished: " << std::this_thread::get_id() << std::endl;
+    std::cout << "The end: " << std::this_thread::get_id() << std::endl;
 }
 
 int main()
